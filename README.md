@@ -1,28 +1,34 @@
-# Optimized Dockur macOS for GitHub Codespaces
+# Storage-Optimized Dockur macOS for GitHub Codespaces
 
 This repository is a storage-conscious fork/overlay of [`dockur/macos`](https://github.com/dockur/macos) for running macOS in GitHub Codespaces.
 
-## What is changed
+## Current profile
 
-- macOS Tahoe 26 is selected by default.
-- Codespaces is capped for a 32 GB storage target instead of inheriting Dockur's `DISK_SIZE=max` Codespaces setting.
-- The VM disk uses sparse `qcow2`, so the virtual capacity is a ceiling rather than an immediately allocated raw file.
-- Docker caches and unused images are pruned during Codespace initialization.
-- The default VM profile targets 2 vCPUs and 6 GB RAM on the standard 2-core/8 GB Codespaces machine.
-- Storage guardrails prevent accidental growth past the project target.
-- Upstream source can be synchronized with `scripts/sync-upstream.sh` rather than duplicating macOS installer media in Git.
+- macOS 15 Sequoia
+- 1 vCPU during installation
+- 4 GiB RAM
+- 40 GiB logical qcow2 disk
+- VM disk stored in Docker-managed volume `novaos-macos-data`
+- Audio disabled
+- Web viewer only on port `8006`
+- No automatic VM restart loop
 
-## Start in Codespaces
+## Why the disk is 40 GiB
 
-1. Create a GitHub Codespace using the `main` branch.
-2. Open the forwarded **Web** port for `8006`.
-3. Complete the normal Dockur macOS recovery/installation flow.
-4. Keep the VM disk below the 24 GB virtual-disk ceiling so the Codespace retains headroom for Docker and the workspace.
+macOS checks the **logical capacity** of the VM disk during installation. A sparse qcow2 disk can expose 40 GiB to macOS without immediately allocating 40 GiB on the host.
 
-## Important
+The VM is deliberately **not** stored in `/workspaces`, because your Codespace exposes `/workspaces` as a 32 GiB filesystem. The Docker-managed volume keeps the rapidly growing guest disk out of that workspace filesystem.
 
-macOS itself is not distributed by this repository. Dockur downloads recovery/install components from Apple's servers. This repository contains the open-source container orchestration/configuration layer and an optimized Codespaces profile.
+Use:
 
-Tahoe is currently supported by Dockur but its own README notes that macOS 26 can run unusually slowly, so performance is workload- and host-dependent.
+```bash
+bash .devcontainer/storage-status.sh
+```
 
-Upstream project: https://github.com/dockur/macos
+to compare workspace free space, VM-volume free space, and Docker usage.
+
+## First run
+
+Use a fresh Codespace for the Sequoia profile. If an older VM exists in `./macos`, stop the VM first and remove that old directory so it cannot continue consuming workspace storage.
+
+The project does **not** modify Apple's signed installer payloads or fake installer metadata. The optimization is done on the virtualization/storage side: sparse storage, Docker cache cleanup, reduced VM resources, and moving persistent VM data out of `/workspaces`.
