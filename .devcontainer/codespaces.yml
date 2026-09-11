@@ -6,7 +6,10 @@ services:
       VERSION: "26"
       RAM_SIZE: "6G"
       CPU_CORES: "2"
-      DISK_SIZE: "24G"
+      # Tahoe's installer checks the virtual disk capacity, not the amount
+      # currently allocated on the host. Keep this sparse so Codespaces does
+      # not immediately consume the whole filesystem.
+      DISK_SIZE: "44G"
       DISK_FMT: "qcow2"
       DISK_CACHE: "none"
       DISK_TYPE: "blk"
