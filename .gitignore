@@ -1,0 +1,5 @@
+macos/
+vendor/dockur-macos/
+.DS_Store
+*.log
+*.qcow2

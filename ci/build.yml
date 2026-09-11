@@ -1,8 +1,0 @@
-name: NovaOS build
-on: [push, pull_request]
-jobs:
-  smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: ./tests/run-all.sh

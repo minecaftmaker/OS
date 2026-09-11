@@ -1,8 +1,0 @@
-#!/bin/sh
-mount -t proc proc /proc
-mount -t sysfs sys /sys
-mount -t devtmpfs dev /dev
-mount -t tmpfs run /run
-mkdir -p /tmp /var/log
-printf '%s\n' 'NovaOS userspace online'
-exec /usr/bin/nova-session

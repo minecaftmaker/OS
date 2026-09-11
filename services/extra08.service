@@ -1,3 +1,0 @@
-[Service]
-Name=extra08
-Exec=/usr/lib/nova/extra08

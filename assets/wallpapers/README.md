@@ -1,1 +1,0 @@
-Original wallpapers belong here.

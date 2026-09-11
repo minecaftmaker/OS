@@ -1,26 +1,28 @@
-# NovaOS
+# Optimized Dockur macOS for GitHub Codespaces
 
-A Linux-based desktop operating system project inspired by Windows 11 usability and Linux openness.
+This repository is a storage-conscious fork/overlay of [`dockur/macos`](https://github.com/dockur/macos) for running macOS in GitHub Codespaces.
 
-This repository is intentionally organized as a complete OS source tree: boot configuration, kernel configuration, init/services, package tooling, desktop shell, system applications, themes, documentation, tests, and image-building scripts.
+## What is changed
 
-## Architecture
+- macOS Tahoe 26 is selected by default.
+- Codespaces is capped for a 32 GB storage target instead of inheriting Dockur's `DISK_SIZE=max` Codespaces setting.
+- The VM disk uses sparse `qcow2`, so the virtual capacity is a ceiling rather than an immediately allocated raw file.
+- Docker caches and unused images are pruned during Codespace initialization.
+- The default VM profile targets 2 vCPUs and 6 GB RAM on the standard 2-core/8 GB Codespaces machine.
+- Storage guardrails prevent accidental growth past the project target.
+- Upstream source can be synchronized with `scripts/sync-upstream.sh` rather than duplicating macOS installer media in Git.
 
-- Linux kernel: configured as the hardware kernel rather than reimplementing a kernel.
-- BusyBox: minimal POSIX userspace for the base image.
-- systemd-style service layout with a small project init layer.
-- Nova Shell: centered launcher, taskbar, window-management concepts, notifications, virtual desktops, and settings.
-- Nova package metadata: simple repository/package format for the project.
-- Reproducible image scripts: build an initramfs/root filesystem and bootable image.
+## Start in Codespaces
 
-## Status
+1. Create a GitHub Codespace using the `main` branch.
+2. Open the forwarded **Web** port for `8006`.
+3. Complete the normal Dockur macOS recovery/installation flow.
+4. Keep the VM disk below the 24 GB virtual-disk ceiling so the Codespace retains headroom for Docker and the workspace.
 
-This is an active source tree and architectural foundation. The build system checks host dependencies and assembles components; Linux kernel and third-party source archives are intentionally fetched separately instead of vendoring millions of upstream lines.
+## Important
 
-## Build
+macOS itself is not distributed by this repository. Dockur downloads recovery/install components from Apple's servers. This repository contains the open-source container orchestration/configuration layer and an optimized Codespaces profile.
 
-See `docs/build.md` and run `./tools/build.sh` from a Linux build host.
+Tahoe is currently supported by Dockur but its own README notes that macOS 26 can run unusually slowly, so performance is workload- and host-dependent.
 
-## License
-
-Project-original files are MIT licensed unless a file states otherwise. Third-party components retain their upstream licenses.
+Upstream project: https://github.com/dockur/macos

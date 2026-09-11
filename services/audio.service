@@ -1,4 +1,0 @@
-[Service]
-Name=audio
-Exec=/usr/lib/nova/audiod
-Restart=always

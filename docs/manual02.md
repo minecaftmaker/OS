@@ -1,1 +1,0 @@
-# NovaOS Manual 02

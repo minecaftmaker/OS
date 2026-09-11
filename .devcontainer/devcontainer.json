@@ -1,0 +1,16 @@
+{
+  "name": "macOS Tahoe 26 • 32 GB optimized",
+  "service": "macos",
+  "dockerComposeFile": "codespaces.yml",
+  "forwardPorts": [8006],
+  "portsAttributes": {
+    "8006": {
+      "label": "macOS Web Viewer",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "otherPortsAttributes": {
+    "onAutoForward": "ignore"
+  },
+  "initializeCommand": "bash .devcontainer/storage-guard.sh"
+}

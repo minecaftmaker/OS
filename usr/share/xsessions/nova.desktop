@@ -1,4 +1,0 @@
-[Desktop Entry]
-Name=Nova Desktop (X11 fallback)
-Exec=/usr/bin/nova-session
-Type=Application

@@ -1,2 +1,0 @@
-#!/bin/sh
-printf '%s\n' 'NovaOS 0.1.0-dev — Linux-based desktop system'

@@ -1,1 +1,0 @@
-/* Nova library 14 */

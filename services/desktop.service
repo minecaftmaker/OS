@@ -1,4 +1,0 @@
-[Service]
-Name=desktop
-Exec=/usr/bin/nova-session
-After=network
