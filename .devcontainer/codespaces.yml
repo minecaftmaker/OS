@@ -3,17 +3,14 @@ services:
     container_name: macos
     image: ghcr.io/dockur/macos:latest
     environment:
-      VERSION: "26"
-      # Installation profile: keep the host overhead low while still giving
-      # Tahoe enough memory to complete recovery/install reliably.
+      VERSION: "15"
       RAM_SIZE: "4G"
       CPU_CORES: "1"
-      # Tahoe checks the logical guest capacity. qcow2 keeps this sparse.
-      DISK_SIZE: "44G"
+      DISK_SIZE: "40G"
       DISK_FMT: "qcow2"
-      DISK_CACHE: "none"
+      DISK_CACHE: "writeback"
       DISK_TYPE: "blk"
-      RAM_MINIMUM: "3G"
+      RAM_MINIMUM: "2G"
       DISK_MINIMUM: "12G"
       AUDIO: "N"
       DHCP: "N"
@@ -25,6 +22,10 @@ services:
     ports:
       - 8006:8006
     volumes:
-      - ../macos:/storage
+      - macos-data:/storage
     restart: "no"
-    stop_grace_period: 30s
+    stop_grace_period: 2m
+
+volumes:
+  macos-data:
+    name: novaos-macos-data
