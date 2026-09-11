@@ -1,0 +1,4 @@
+[Service]
+Name=network
+Exec=/usr/lib/nova/networkd
+Restart=always

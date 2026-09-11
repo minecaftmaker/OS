@@ -1,0 +1,4 @@
+[Service]
+Name=updates
+Exec=/usr/lib/nova/updated
+Restart=on-failure

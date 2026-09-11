@@ -1,0 +1,4 @@
+[Service]
+Name=logger
+Exec=/usr/lib/nova/loggerd
+Restart=always

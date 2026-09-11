@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Nova Files
+Exec=nova-files
+Type=Application
+Categories=Utility;FileManager;

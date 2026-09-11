@@ -1,0 +1,4 @@
+NAME=NovaOS
+VERSION=0.1.0-dev
+ID=nova
+PRETTY_NAME="NovaOS 0.1 Development"
