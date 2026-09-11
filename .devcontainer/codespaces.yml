@@ -4,16 +4,16 @@ services:
     image: ghcr.io/dockur/macos:latest
     environment:
       VERSION: "26"
-      RAM_SIZE: "6G"
-      CPU_CORES: "2"
-      # Tahoe's installer checks the virtual disk capacity, not the amount
-      # currently allocated on the host. Keep this sparse so Codespaces does
-      # not immediately consume the whole filesystem.
+      # Installation profile: keep the host overhead low while still giving
+      # Tahoe enough memory to complete recovery/install reliably.
+      RAM_SIZE: "4G"
+      CPU_CORES: "1"
+      # Tahoe checks the logical guest capacity. qcow2 keeps this sparse.
       DISK_SIZE: "44G"
       DISK_FMT: "qcow2"
       DISK_CACHE: "none"
       DISK_TYPE: "blk"
-      RAM_MINIMUM: "4G"
+      RAM_MINIMUM: "3G"
       DISK_MINIMUM: "12G"
       AUDIO: "N"
       DHCP: "N"
@@ -24,9 +24,7 @@ services:
       - NET_ADMIN
     ports:
       - 8006:8006
-      - 5900:5900/tcp
-      - 5900:5900/udp
     volumes:
       - ../macos:/storage
-    restart: on-failure
-    stop_grace_period: 2m
+    restart: "no"
+    stop_grace_period: 30s
