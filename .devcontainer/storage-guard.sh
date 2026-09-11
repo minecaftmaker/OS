@@ -1,44 +1,57 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-# Codespaces has a fixed physical filesystem. The macOS guest therefore uses a
-# sparse qcow2 image whose logical capacity is large enough for Tahoe's installer
-# while its physical footprint grows only as blocks are actually written.
+# Keep VM storage out of the Codespaces /workspaces loop filesystem.
+# The macOS disk is stored in a Docker-managed volume and remains sparse.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-TARGET_GB=32
-VM_LOGICAL_GB=44
-WARN_FREE_GB=8
-CRITICAL_FREE_GB=3
+VOLUME_NAME="novaos-macos-data"
+WORKSPACE_WARN_GB=6
+WORKSPACE_CRITICAL_GB=2
 
-free_kb=$(df -Pk . | awk 'NR==2 {print $4}')
-free_gb=$((free_kb / 1024 / 1024))
+workspace_free_gb() {
+  local kb
+  kb=$(df -Pk /workspaces | awk 'NR==2 {print $4}')
+  echo $((kb / 1024 / 1024))
+}
 
-echo "[codespaces] free workspace storage: ${free_gb} GiB"
-echo "[codespaces] logical macOS disk: ${VM_LOGICAL_GB} GiB (qcow2 sparse)"
+echo "[codespaces] workspace free: $(workspace_free_gb) GiB"
 
-if (( free_gb < WARN_FREE_GB )); then
-  echo "[codespaces] low storage; reclaiming Docker build/cache data..."
-  docker system prune -af --volumes || true
+# Reclaim Docker build/image cache, but never touch the persistent macOS volume.
+if (( $(workspace_free_gb) < WORKSPACE_WARN_GB )); then
+  echo "[codespaces] reclaiming Docker cache..."
+  docker system prune -af --volumes=false || true
   docker builder prune -af || true
   docker image prune -af || true
 fi
 
-mkdir -p "$ROOT/macos"
+# Ensure the persistent VM volume exists before Compose starts the VM.
+docker volume create "$VOLUME_NAME" >/dev/null
 
-free_kb=$(df -Pk . | awk 'NR==2 {print $4}')
-free_gb=$((free_kb / 1024 / 1024))
-if (( free_gb < CRITICAL_FREE_GB )); then
-  echo "ERROR: less than ${CRITICAL_FREE_GB} GiB remain in the Codespace filesystem."
-  echo "The macOS VM is intentionally not started with dangerously low host storage."
-  echo "Delete caches or recreate the Codespace before continuing."
+VOLUME_MOUNT=$(docker volume inspect -f '{{.Mountpoint}}' "$VOLUME_NAME")
+mkdir -p "$VOLUME_MOUNT"
+
+# Report both filesystems: the workspace is no longer where the VM disk lives.
+workspace_free=$(workspace_free_gb)
+volume_free_kb=$(df -Pk "$VOLUME_MOUNT" | awk 'NR==2 {print $4}')
+volume_free_gb=$((volume_free_kb / 1024 / 1024))
+
+printf '[codespaces] VM volume: %s\n' "$VOLUME_MOUNT"
+printf '[codespaces] VM volume free: %s GiB\n' "$volume_free_gb"
+printf '[codespaces] VM storage mode: Docker volume + sparse qcow2\n'
+
+if (( workspace_free < WORKSPACE_CRITICAL_GB )); then
+  echo "ERROR: less than ${WORKSPACE_CRITICAL_GB} GiB remain in /workspaces."
+  echo "Recreate/clean the Codespace before continuing."
   exit 1
 fi
 
-# Avoid retaining transient Docker layers between Codespace rebuilds.
-docker system prune -af || true
+if (( volume_free_gb < 6 )); then
+  echo "ERROR: less than 6 GiB remain on the filesystem backing the macOS volume."
+  echo "Refusing to start the VM to avoid taking the Codespace offline."
+  exit 1
+fi
 
-echo "[codespaces] host storage budget: ${TARGET_GB} GiB"
-echo "[codespaces] macOS logical capacity: ${VM_LOGICAL_GB} GiB"
-echo "[codespaces] physical qcow2 usage grows only as macOS writes blocks"
+# Never prune volumes here: novaos-macos-data contains the macOS VM.
+echo "[codespaces] storage guard passed"
